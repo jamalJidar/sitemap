@@ -1,0 +1,6 @@
+.vs
+./app/bin/
+./app/obj/
+./app/wwwroot/ImgPost/*.*
+./app/wwwroot/DescImgPost/*.*
+./app/wwwroot/Uploads/*.*
