@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "nuC/aDwmOsCDhoiNek9Qwm/65elskGPtZIbuSa8igwt3i4CiNRkt1ThQhGPvxmQV28k4GgfdZz5gkbB+vk9Ymg==",
+  "dgSpecHash": "BmjYtepu+x2ffmsWYq/a6IFM97+3VsIPg7GXEv1rIfbLPu1jTwBPiC4IPfhkvzybRjtpXB98uEANAKbBQGVEEA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\admin\\Desktop\\0\\SiteMap\\SiteMap.csproj",
+  "projectFilePath": "C:\\Users\\admin\\Desktop\\0\\SiteMap\\app\\SiteMap.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

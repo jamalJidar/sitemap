@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\admin\\Desktop\\0\\SiteMap\\SiteMap.csproj": {}
+    "C:\\Users\\admin\\Desktop\\0\\SiteMap\\app\\SiteMap.csproj": {}
   },
   "projects": {
-    "C:\\Users\\admin\\Desktop\\0\\SiteMap\\SiteMap.csproj": {
+    "C:\\Users\\admin\\Desktop\\0\\SiteMap\\app\\SiteMap.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\admin\\Desktop\\0\\SiteMap\\SiteMap.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\Desktop\\0\\SiteMap\\app\\SiteMap.csproj",
         "projectName": "SiteMap",
-        "projectPath": "C:\\Users\\admin\\Desktop\\0\\SiteMap\\SiteMap.csproj",
+        "projectPath": "C:\\Users\\admin\\Desktop\\0\\SiteMap\\app\\SiteMap.csproj",
         "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\admin\\Desktop\\0\\SiteMap\\obj\\",
+        "outputPath": "C:\\Users\\admin\\Desktop\\0\\SiteMap\\app\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
