@@ -21,12 +21,11 @@ namespace app.Services.SiteMapService
         public DirectoryInfo CreateRootFolder(string RootFolder, out bool exit);
         public void AddOrUpdateSiteMapIndex();
         public string[] ListSiteMap(string path);
-        public void WriteTagIndex(string Navigation, DateTime lastmod, XmlWriter MyWriter);
-        public void WriteTagIndex(string Priority, string freq, string Navigation, DateTime lastmod, XmlWriter MyWriter);
         public void GenerateSiteMapPost();
         public void GenerateSiteMapImage();
-        public void GenerateSiteMapTag();
-        public void WriteTag();
+        public void GenerateSiteMapTag(); 
+        public void WriteTag(string Priority, string freq, string Navigation, DateTime lastmod, XmlWriter MyWriter);
+        public void WriteTag(string Navigation, DateTime lastmod, XmlWriter MyWriter);
         public void AppendTag(string url, string Navigation, DateTime lastmod);
         public void AppendTag(string url, string Priority, string freq, string Navigation, DateTime lastmod);
 
@@ -50,7 +49,7 @@ namespace app.Services.SiteMapService
             foreach (var item in listfile.Where(x => x != "SiteMap_index.xml"))
             {
                 string url = item.Remove(0, item.IndexOf("/sitemap"));
-                WriteTagIndex($"{LinkSite}{url}", DateTime.Now, writer);
+                WriteTag($"{LinkSite}{url}", DateTime.Now, writer);
             }
 
             writer.WriteEndDocument();
@@ -62,7 +61,14 @@ namespace app.Services.SiteMapService
           => Directory.GetFiles($"{env.WebRootPath}{path}", "*.xml", SearchOption.AllDirectories);
         public DirectoryInfo CreateRootFolder(string RootFolder, out bool exit)
         {
-            throw new NotImplementedException();
+            exit = true;
+            if (!System.IO.Directory.Exists($"{env.WebRootPath}/{RootFolder}"))
+            {
+                exit = false;
+                return System.IO.Directory.CreateDirectory($"{env.WebRootPath}/{RootFolder}");
+            }
+
+            return new DirectoryInfo($"{env.WebRootPath}/{RootFolder}");
         }
 
         public void GenerateSiteMapImage()
@@ -80,12 +86,7 @@ namespace app.Services.SiteMapService
             throw new NotImplementedException();
         }
 
-        public void WriteTag()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void WriteTagIndex(string Navigation, DateTime lastmod, XmlWriter MyWriter)
+        public void WriteTag(string Navigation, DateTime lastmod, XmlWriter MyWriter)
         {
             MyWriter.WriteStartElement("sitemap");
 
@@ -99,12 +100,21 @@ namespace app.Services.SiteMapService
 
             MyWriter.WriteEndElement();
         }
-
-        public void WriteTagIndex(string Priority, string freq, string Navigation, DateTime lastmod, XmlWriter MyWriter)
+        public void WriteTag(string Priority, string freq, string Navigation, DateTime lastmod, XmlWriter MyWriter)
         {
-            throw new NotImplementedException();
-        }
+          MyWriter.WriteStartElement("sitemap");
 
+            MyWriter.WriteStartElement("loc");
+            MyWriter.WriteValue(Navigation);
+            MyWriter.WriteEndElement();
+
+            MyWriter.WriteStartElement("lastmod");
+            MyWriter.WriteValue(lastmod);
+            MyWriter.WriteEndElement();
+
+            MyWriter.WriteEndElement();
+        }
+       
         public void AppendTag(string url, string Priority, string freq, string Navigation, DateTime lastmod)
         {
             XDocument doc = XDocument.Load(url);
@@ -121,6 +131,8 @@ namespace app.Services.SiteMapService
         {
             throw new NotImplementedException();
         }
+
+
     }
 
 
