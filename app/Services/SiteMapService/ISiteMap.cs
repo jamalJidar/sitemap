@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using app.Models;
-
+using Newtonsoft.Json;
 namespace app.Services.SiteMapService
 {
     public interface ISiteMapService
@@ -14,12 +16,15 @@ namespace app.Services.SiteMapService
         public DirectoryInfo CreateRootFolder(string RootFolder, out bool exit);
         public void AddOrUpdateSiteMapIndex();
         public string[] ListSiteMap(string path);
-        public Task ListData(List<SiteMapProperty> list, SiteMapType type ,int index , int Page);
+        public Task ListData(List<SiteMapProperty> list, SiteMapType type, int index, int Page);
         public void WriteTag(SiteMapProperty t);
         public void WriteTag(SiteMapProperty t, SiteMapType type);
         public void AppendTag(SiteMapProperty t, string Url, SiteMapType type);
         public void AppendTag(SiteMapProperty t, string Url);
-
+        public bool CheckExistsJsonFile();
+        public Task<List<JsonList>> WriteJsonFile();
+        public Task<List<JsonList>> WriteJsonFile(List<JsonList> list);
+        public Task<List<JsonList>> ReadJsonFile();
     }
     public class SiteMapService : ISiteMapService
     {
@@ -50,9 +55,6 @@ namespace app.Services.SiteMapService
                     Writer = writer
                 }, SiteMapType.SiteMapIndex);
             }
-            /*
-            $"{LinkSite}{url}", DateTime.Now, writer
-            */
             writer.WriteEndDocument();
             writer.Close();
             writer.Dispose();
@@ -80,7 +82,6 @@ namespace app.Services.SiteMapService
             _siteMap.Writer.WriteEndElement();
 
         }
-        //string Priority, string freq, string Navigation, DateTime lastmod, XmlWriter MyWriter
         public void WriteTag(SiteMapProperty _siteMap)
         {
             _siteMap.Writer.WriteStartElement("url");
@@ -97,7 +98,6 @@ namespace app.Services.SiteMapService
             _siteMap.Writer.WriteValue(_siteMap.Priority);
             _siteMap.Writer.WriteEndElement();
         }
-
         public void AppendTag(SiteMapProperty _siteMapProperty, string url)
         {
             XDocument doc = XDocument.Load(url);
@@ -109,7 +109,6 @@ namespace app.Services.SiteMapService
             doc.Document.Root.Add(demoNode);//(demoNode);
             doc.Save($"{env.WebRootPath}/sitemap/post{10}.xml");
         }
-
         public void AppendTag(SiteMapProperty _siteMapProperty, string url, SiteMapType type)
         {
             XDocument doc = XDocument.Load(url);
@@ -120,11 +119,10 @@ namespace app.Services.SiteMapService
             doc.Save($"{env.WebRootPath}/sitemap/{Utility.EnumExtensions.GetDisplayName(type)}.xml");
         }
         private string sitemapLocation() => configuration.GetSection("sitemapLocation").Value;
-        public async Task ListData(List<SiteMapProperty> list, SiteMapType type , int index , int Page)
+        public async Task ListData(List<SiteMapProperty> list, SiteMapType type, int index, int Page)
         {
             if (type != SiteMapType.Post)
             {
-                 
                 XNamespace nsSitemap = "http://www.sitemaps.org/schemas/sitemap/0.9";
                 XNamespace nsType = $"http://www.google.com/schemas/sitemap-{Utility.EnumExtensions.GetDisplayName(type)}/1.1";
                 var ImageSiteMap = new XDocument(new XDeclaration("1.0", "UTF-8", ""));
@@ -133,7 +131,6 @@ namespace app.Services.SiteMapService
                  new XAttribute("xmlns", nsSitemap),
                  new XAttribute(
                    $"{XNamespace.Xmlns}{Utility.EnumExtensions.GetDisplayName(type)}", nsType));
-
                 foreach (var item in list)
                 {
                     WriteTag(new SiteMapProperty()
@@ -171,13 +168,72 @@ namespace app.Services.SiteMapService
                             Priority = item.Priority,
                             Writer = writer
                         });
-                    //"0.9", "Daily", string.Format("{0}s/{1}", LinkSite, item.Navigation), item.Navigation, writer);
                 }
                 writer.WriteEndDocument();
                 writer.Close();
             }
         }
+        public bool CheckExistsJsonFile()
+         => System.IO.File.Exists($"{env.WebRootPath}/JsonFile.json");
+        public async Task<List<JsonList>> WriteJsonFile()
+        {
+            List<JsonList> list = new List<JsonList>();
+            foreach (SiteMapType item in (SiteMapType[])Enum.GetValues(typeof(SiteMapType)))
+            {
+                list.Add(new JsonList()
+                {
+                    Count = 0,
+                    Type = item
+                });
+            }
+            string output = JsonConvert.SerializeObject(list);
+            using (FileStream fs = new FileStream($"{env.WebRootPath}/JsonFile.json", FileMode.Create))
+            {
+                byte[] writeArr = Encoding.UTF8.GetBytes(output);
+                await fs.WriteAsync(writeArr, 0, output.Length);
+                fs.Close();
+            }
+            return list;
+        }
+        public async Task<List<JsonList>> WriteJsonFile(List<JsonList?> list)
+        { 
+             var temp = await ReadJsonFile();
+            if (!CheckExistsJsonFile())
+            { await WriteJsonFile(); }
+            else
+            {
+                foreach (var item in list)
+                {  
+                     var _jsonItem = temp.Where(x => x.Type == item.Type).FirstOrDefault();
+                    _jsonItem.Count += item.Count;
+                }
+                string output = JsonConvert.SerializeObject(list);
+                using (FileStream fs = new FileStream($"{env.WebRootPath}/JsonFile.json", FileMode.Create))
+                {  
+                     byte[] writeArr = Encoding.UTF8.GetBytes(output);
+                    await fs.WriteAsync(writeArr, 0, output.Length);
+                    fs.Close();
+                }
+            }
+            return temp;
+        }
+        public async Task<List<JsonList>> ReadJsonFile()
+        {
+            if (!CheckExistsJsonFile()) { return await WriteJsonFile(); }
+            List<JsonList> list = new List<JsonList>();
+            using (FileStream fs = new FileStream($"{env.WebRootPath}/JsonFile.json", FileMode.Open))
+            {
+                byte[] readArr = new byte[fs.Length];
+                int count;
+                while ((count = fs.Read(readArr, 0, readArr.Length)) > 0)
+                {
+                    var item = JsonConvert.DeserializeObject<JsonList>(Encoding.UTF8.GetString(readArr, 0, count));
+                    list.Add(item);
+                }
+                fs.Close();
+                Console.ReadKey();
+            }
+            return list;
+        }
     }
-
-
 }
