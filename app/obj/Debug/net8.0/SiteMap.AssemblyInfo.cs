@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SiteMap")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e9595d4fbc6112cc1e45ab551ea708d2f61923f4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+328448e91eb7c532feecf284d8e4932f45eea132")]
 [assembly: System.Reflection.AssemblyProductAttribute("SiteMap")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SiteMap")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

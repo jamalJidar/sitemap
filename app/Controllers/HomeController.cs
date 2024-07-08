@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Xml;
 using System.Xml.Linq;
 using app.Models;
+using app.Services.SiteMapService;
 using Microsoft.AspNetCore.Mvc;
 using SiteMap.Models;
 
@@ -11,43 +12,51 @@ public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
     private readonly IWebHostEnvironment env;
+    private readonly ISiteMapService siteMapService;
     string LinkSite = "LinkSite";
-    public HomeController(ILogger<HomeController> logger, IWebHostEnvironment env)
+    public HomeController(ILogger<HomeController> logger, IWebHostEnvironment env, ISiteMapService siteMapService)
     {
         _logger = logger;
         this.env = env;
+        this.siteMapService = siteMapService;
     }
 
     public IActionResult Index()
     {
         Post post = new Post();
-        var listNews = post.posts();
-        int pageid = 1;
-        int page = 20;
-        int skip = (pageid - 1) * page;
-        int Count = post.posts().Count();
-        for (int i = 1; i <= Count / page; i++)
-        {
-            skip = (i) * page;
-
-            if ((Count - skip) < page)
-            {
-                GeneratePostSiteMap(listNews.OrderByDescending(x => x.DateCrete).Skip(skip).Take(page).ToList(), i);
-                System.Console.WriteLine("append");
-            }
-
-            else
-            {
-                if (!ChecKHasFile($"SiteMap{i}.xml"))
-                {
-                    GeneratePostSiteMap(listNews.OrderByDescending(x => x.DateCrete).Skip(skip).Take(page).ToList(), i);
-                    System.Console.WriteLine("new file ...");
-                }
 
 
-            }
 
-        }
+
+
+        var item = siteMapService.Config(SiteMapType.Post);
+        int Count = item.Item2;
+        int page = item.Item1;
+        var listNews = post.posts().OrderByDescending(x => x.Id).Skip(0).Take(page);
+
+        // 
+        // for (int i = 1; i <= Count / page; i++)
+        // {
+        //     skip = (i) * page;
+
+        //     if ((Count - skip) < page)
+        //     {
+        //         GeneratePostSiteMap(listNews.OrderByDescending(x => x.DateCrete).Skip(skip).Take(page).ToList(), i);
+        //         System.Console.WriteLine("append");
+        //     }
+
+        //     else
+        //     {
+        //         if (!ChecKHasFile($"SiteMap{i}.xml"))
+        //         {
+        //             GeneratePostSiteMap(listNews.OrderByDescending(x => x.DateCrete).Skip(skip).Take(page).ToList(), i);
+        //             System.Console.WriteLine("new file ...");
+        //         }
+
+
+        //     }
+
+        // }
 
 
 
@@ -135,4 +144,3 @@ public class HomeController : Controller
 }
 
 
- 

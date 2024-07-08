@@ -9,5 +9,6 @@ namespace app.Models
     {
         public SiteMapType  Type { get; set; }
         public int Count { get; set; }
+        public int Page { get; set; }
     }
 }

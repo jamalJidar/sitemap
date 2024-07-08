@@ -14,6 +14,8 @@ namespace app.Services.SiteMapService
     {
         public bool CheckHasFile(string FilenName);
         public DirectoryInfo CreateRootFolder(string RootFolder, out bool exit);
+        public  (int , int)  Config( SiteMapType type);
+
         public void AddOrUpdateSiteMapIndex();
         public string[] ListSiteMap(string path);
         public Task ListData(List<SiteMapProperty> list, SiteMapType type, int index, int Page);
@@ -39,6 +41,12 @@ namespace app.Services.SiteMapService
         }
         public bool CheckHasFile(string FilenName) =>
         File.Exists($"{env.WebRootPath}/sitemap/{FilenName}");
+        public (int , int) Config(SiteMapType type )
+        {
+            var json = ReadJsonFile().Result;
+            var item = json.Where(x => x.Type == type).FirstOrDefault();
+             return  (item.Page, item.Count);
+        }
         public void AddOrUpdateSiteMapIndex()
         {
             XmlWriter writer = XmlWriter.Create($"{env.WebRootPath}/sitemap/SiteMap_index.xml");
@@ -183,6 +191,7 @@ namespace app.Services.SiteMapService
                 list.Add(new JsonList()
                 {
                     Count = 0,
+                    Page = 0,
                     Type = item
                 });
             }
@@ -196,21 +205,22 @@ namespace app.Services.SiteMapService
             return list;
         }
         public async Task<List<JsonList>> WriteJsonFile(List<JsonList?> list)
-        { 
-             var temp = await ReadJsonFile();
+        {
+            var temp = await ReadJsonFile();
             if (!CheckExistsJsonFile())
             { await WriteJsonFile(); }
             else
             {
                 foreach (var item in list)
-                {  
-                     var _jsonItem = temp.Where(x => x.Type == item.Type).FirstOrDefault();
+                {
+                    var _jsonItem = temp.Where(x => x.Type == item.Type).FirstOrDefault();
                     _jsonItem.Count += item.Count;
+                    _jsonItem.Page = item.Page;
                 }
                 string output = JsonConvert.SerializeObject(list);
                 using (FileStream fs = new FileStream($"{env.WebRootPath}/JsonFile.json", FileMode.Create))
-                {  
-                     byte[] writeArr = Encoding.UTF8.GetBytes(output);
+                {
+                    byte[] writeArr = Encoding.UTF8.GetBytes(output);
                     await fs.WriteAsync(writeArr, 0, output.Length);
                     fs.Close();
                 }
@@ -235,5 +245,7 @@ namespace app.Services.SiteMapService
             }
             return list;
         }
+
+        
     }
 }
