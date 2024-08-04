@@ -18,8 +18,6 @@ namespace app.Services.SiteMapService
         public Task<(int, int, bool)> Config(SiteMapType type);
 
         public void AddOrUpdateSiteMapIndex();
-
-        public Task ListData(List<SiteMapProperty> list, SiteMapType type, int index, int Page);
         public void WriteTag(SiteMapProperty t);
         public void WriteTag(SiteMapProperty t, SiteMapType type);
         public void AppendTag(SiteMapProperty t, string Url, SiteMapType type);
@@ -221,7 +219,7 @@ namespace app.Services.SiteMapService
             {
                 list.Add(new JsonList()
                 {
-                    Count = 11,
+                    Count = 0,
                     Page = 1,
                     Type = item
                 });
@@ -258,11 +256,6 @@ namespace app.Services.SiteMapService
                 }
             }
             return temp;
-        }
-
-        public Task ListData(List<SiteMapProperty> list, SiteMapType type, int index, int Page)
-        {
-            throw new NotImplementedException();
         }
 
       
