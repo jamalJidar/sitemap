@@ -9,13 +9,13 @@ namespace app.Models
         public string _slug
         {
             get
-            { return $"/post/{this.Id}/{this.Title}"; }
+            { return $"/{this.Title}/{this.Id}"; }
         }
 
         public List<Post> posts()
         {
             List<Post> list = new List<Post>();
-            for (int i = 1; i < 353; i++)
+            for (int i = 1; i < 765; i++)
             {
                 list.Add(new Post()
                 {
