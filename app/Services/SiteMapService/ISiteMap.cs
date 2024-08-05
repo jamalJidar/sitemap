@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,23 +27,59 @@ namespace app.Services.SiteMapService
         public Task<List<JsonList>> WriteJsonFile();
         public Task<List<JsonList>> WriteJsonFile(List<JsonList> list);
         public Task<(List<JsonList>, bool)> ReadJsonFile();
-        public void GeneratePostSiteMap(List<SiteMapProperty> _news, int pageSize, int page);
+        public void GenerateSiteMap(List<SiteMapProperty> _news, int pageSize, int page , SiteMapType type);
+        public void GenerateSiteMap    (List<SiteMapProperty> _news, int pageSize, int page);
     }
     public class SiteMapService : ISiteMapService
     {
         private const int padinate = 20;
         private readonly IWebHostEnvironment env;
         private readonly IConfiguration configuration;
-        const string LinkSite = "";
+        const string LinkSite = "https://localhost:7260";
         public SiteMapService(IWebHostEnvironment env, IConfiguration configuration)
         {
             this.env = env;
             this.configuration = configuration;
         }
-        public void GeneratePostSiteMap(List<SiteMapProperty> _news, int pageSize, int page)
+
+
+ public void GenerateTagPostSiteMap(List<News> listNews, int index)
+        {
+            List<string> tags = new List<string>();
+            var _tags = listNews.Select(x => x.Tags).ToArray();
+            _tags.ToList().ForEach(t =>
+            {
+                tags.AddRange(t.Split('،'));
+
+            });
+
+            if (tags.Count() > 0)
+
+            {
+
+                XmlWriter writer = XmlWriter.Create($"{env.WebRootPath}/sitemap/SiteMapTag{index}.xml");
+                 writer.WriteStartDocument();
+                writer.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
+
+
+                foreach (var item in tags)
+                {
+                    WriteTag("0.9", "Daily", $"{LinkSite}/tag/{item}", DateTime.Now, writer);
+                }
+
+                writer.WriteEndDocument();
+
+                writer.Close();
+
+
+            }
+
+        }
+
+        public void GenerateSiteMap(List<SiteMapProperty> _news, int pageSize, int page, SiteMapType type)
         {
 
-            XmlWriter writer = XmlWriter.Create($"{env.WebRootPath}/sitemap/SiteMap{page}.xml");
+            XmlWriter writer = XmlWriter.Create($"{env.WebRootPath}/sitemap/{Utility.EnumExtensions.GetDisplayName(type)}{page}.xml");
 
             writer.WriteStartDocument();
             //http://www.sitemaps.org/schemas/sitemap/0.9
@@ -72,6 +109,31 @@ namespace app.Services.SiteMapService
             writer.WriteEndDocument();
 
             writer.Close();
+        }
+        public void GenerateSiteMap(List<SiteMapProperty> listNews, int pageSize, int page)
+        {
+
+            XNamespace nsSitemap = "http://www.sitemaps.org/schemas/sitemap/0.9";
+            XNamespace nsImage = "http://www.google.com/schemas/sitemap-image/1.1";
+            var ImageSiteMap = new XDocument(new XDeclaration("1.0", "UTF-8", ""));
+
+            var
+              Image = new XElement(nsSitemap + "urlset",
+              new XAttribute("xmlns", nsSitemap),
+              new XAttribute(XNamespace.Xmlns + "image", nsImage));
+
+            foreach (var item in listNews)
+            {
+                //string.Format("{0}/s/{1}/{2}", LinkSite, ">>>>>", item.ShortLink)
+                //<loc>https://filetap.ir/s/m7nkr</loc>
+                Image.Add(new XElement(nsSitemap + "url",
+                 new XElement(nsSitemap + "loc", $"{LinkSite}/s/{item.Navigation}"),
+                 new XElement(nsImage + "image",
+                 new XElement(nsImage + "loc", string.Format("{0}{1}", LinkSite, item.Navigation)))));
+            }
+
+            ImageSiteMap.Add(Image);
+            ImageSiteMap.Save($"{env.WebRootPath}/sitemap/SiteMapImage{page}.xml");
         }
         public void WriteTag(SiteMapProperty _siteMap)
         {
@@ -118,6 +180,26 @@ namespace app.Services.SiteMapService
 
             MyWriter.WriteEndElement();
         }
+        public void AppendTag(SiteMapProperty _siteMapProperty, string url)
+        {
+            XDocument doc = XDocument.Load(url);
+            XElement demoNode = new XElement("url");
+            demoNode.Add(new XElement("loc", _siteMapProperty.Navigation));
+            demoNode.Add(new XElement("lastmod", _siteMapProperty.lastmod));
+            demoNode.Add(new XElement("changefreq", _siteMapProperty.Freq));
+            demoNode.Add(new XElement("priority", _siteMapProperty.Priority));
+            doc.Document.Root.Add(demoNode);//(demoNode);
+            doc.Save($"{env.WebRootPath}/sitemap/post{10}.xml");
+        }
+        public void AppendTag(SiteMapProperty _siteMapProperty, string url, SiteMapType type)
+        {
+            XDocument doc = XDocument.Load(url);
+            XElement demoNode = new XElement("url");
+            demoNode.Add(new XElement("loc", _siteMapProperty.Navigation));
+            demoNode.Add(new XElement("lastmod", _siteMapProperty.lastmod));
+            doc.Document.Root.Add(demoNode);//(demoNode);
+            doc.Save($"{env.WebRootPath}/sitemap/{Utility.EnumExtensions.GetDisplayName(type)}.xml");
+        }
         public bool CheckHasFile(string FilenName) => File.Exists($"{env.WebRootPath}/sitemap/{FilenName}");
         public async Task<(int, int, bool)> Config(SiteMapType type)
         {
@@ -142,7 +224,7 @@ namespace app.Services.SiteMapService
             writer.WriteStartElement("sitemapindex", "http://www.sitemaps.org/schemas/sitemap/0.9");
             var listfile = ListSiteMap();
             Console.WriteLine(" count site map : " + listfile.Count());
-            foreach (var item in listfile.Where(x => x != "SiteMap_index.xml"))
+            foreach (var item in listfile.Where(x => !x.Contains( "SiteMap_index.xml")))
             {
                 string url =  item.Remove(0, item.IndexOf("/sitemap"));
                 WriteTag(new SiteMapProperty()
@@ -183,28 +265,7 @@ namespace app.Services.SiteMapService
             }
             return new DirectoryInfo($"{env.WebRootPath}/{RootFolder}");
         }
-
-
-        public void AppendTag(SiteMapProperty _siteMapProperty, string url)
-        {
-            XDocument doc = XDocument.Load(url);
-            XElement demoNode = new XElement("url");
-            demoNode.Add(new XElement("loc", _siteMapProperty.Navigation));
-            demoNode.Add(new XElement("lastmod", _siteMapProperty.lastmod));
-            demoNode.Add(new XElement("changefreq", _siteMapProperty.Freq));
-            demoNode.Add(new XElement("priority", _siteMapProperty.Priority));
-            doc.Document.Root.Add(demoNode);//(demoNode);
-            doc.Save($"{env.WebRootPath}/sitemap/post{10}.xml");
-        }
-        public void AppendTag(SiteMapProperty _siteMapProperty, string url, SiteMapType type)
-        {
-            XDocument doc = XDocument.Load(url);
-            XElement demoNode = new XElement("url");
-            demoNode.Add(new XElement("loc", _siteMapProperty.Navigation));
-            demoNode.Add(new XElement("lastmod", _siteMapProperty.lastmod));
-            doc.Document.Root.Add(demoNode);//(demoNode);
-            doc.Save($"{env.WebRootPath}/sitemap/{Utility.EnumExtensions.GetDisplayName(type)}.xml");
-        }
+        
         private string sitemapLocation() => configuration.GetSection("sitemapLocation").Value;
 
 

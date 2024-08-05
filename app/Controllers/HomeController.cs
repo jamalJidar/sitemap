@@ -49,65 +49,13 @@ public class HomeController : Controller
                                    Writer = null
 
                                });
-            siteMapService.GeneratePostSiteMap(listNews.ToList(), skip, pageid);
+            siteMapService.GenerateSiteMap(listNews.ToList(), skip, pageid );
              
         } 
         siteMapService.AddOrUpdateSiteMapIndex();
         return View();
     }
-    private void GeneratePostSiteMap(List<Post> posts, int index)
-    {
-        XmlWriter writer = XmlWriter.Create($"{env.WebRootPath}/sitemap/SiteMap{index}.xml");
-        writer.WriteStartDocument();
-        writer.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
-        if (index == 1)
-        {
-            WriteTag("1", "Daily", LinkSite, DateTime.Now, writer);
-
-            WriteTag("1", "Daily", LinkSite + "/Home/Index", DateTime.Now, writer);
-        }
-
-        foreach (var item in posts)
-        {
-            WriteTag("0.9", "Daily", LinkSite + item._slug, item.DateCrete, writer);
-            writer.WriteEndElement();
-        }
-
-        writer.Close();
-        writer.FlushAsync();
-    }
-
-
-    private void WriteTag(string Priority, string freq, string Navigation, DateTime lastmod, XmlWriter MyWriter)
-    {
-        MyWriter.WriteStartElement("url");
-        MyWriter.WriteStartElement("loc");
-        MyWriter.WriteValue(Navigation);
-        MyWriter.WriteEndElement();
-        MyWriter.WriteStartElement("lastmod");
-        MyWriter.WriteValue(lastmod);
-        MyWriter.WriteEndElement();
-        MyWriter.WriteStartElement("changefreq");
-        MyWriter.WriteValue(freq);
-        MyWriter.WriteEndElement();
-        MyWriter.WriteStartElement("priority");
-        MyWriter.WriteValue(Priority);
-        MyWriter.WriteEndElement();
-        MyWriter.WriteEndElement();
-    }
-    private void AppendTag(string url)
-    {
-        XDocument doc = XDocument.Load(url);
-        XElement demoNode = new XElement("url");
-        demoNode.Add(new XElement("loc", "test"));
-        demoNode.Add(new XElement("lastmod", "test"));
-        demoNode.Add(new XElement("changefreq", DateTime.Now));
-        demoNode.Add(new XElement("priority", 0.9));
-        doc.Document.Root.Add(demoNode);//(demoNode);
-        doc.Save($"{env.WebRootPath}/sitemap/SiteMap{10}.xml");
-    }
-    private bool ChecKHasFile(string filename)
-     => System.IO.File.Exists($"{env.WebRootPath}/sitemap/{filename}");
+ 
 
 
 }

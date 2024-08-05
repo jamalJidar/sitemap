@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://localhost:7260/s//title761/761</loc>
+    <image:image>
+      <image:loc>https://localhost:7260/title761/761</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://localhost:7260/s//title762/762</loc>
+    <image:image>
+      <image:loc>https://localhost:7260/title762/762</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://localhost:7260/s//title763/763</loc>
+    <image:image>
+      <image:loc>https://localhost:7260/title763/763</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://localhost:7260/s//title764/764</loc>
+    <image:image>
+      <image:loc>https://localhost:7260/title764/764</image:loc>
+    </image:image>
+  </url>
+</urlset>
