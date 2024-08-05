@@ -33,7 +33,7 @@ public class HomeController : Controller
         int pageSize = 20;
         int skip = (pageid - item.Item2) * pageSize;
         int Count = list.Count;
-
+        Console.WriteLine($"count : {Count} json c {item.Item1*item.Item2}");
         for (int i = 1; i <= ((Count / pageSize) + 1); i++)
         {
             pageid = i;
@@ -49,13 +49,15 @@ public class HomeController : Controller
                                    Writer = null
 
                                });
-            siteMapService.GenerateSiteMap(listNews.ToList(), skip, pageid );
-             
-        } 
+            siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Post);
+            siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Image);
+            siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Tag);
+            siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Catgory);
+        }
         siteMapService.AddOrUpdateSiteMapIndex();
         return View();
     }
- 
+
 
 
 }
