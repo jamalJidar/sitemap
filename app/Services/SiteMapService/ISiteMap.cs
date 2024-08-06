@@ -29,6 +29,7 @@ namespace app.Services.SiteMapService
         public Task<List<JsonList>> WriteJsonFile();
         public Task<List<JsonList>> WriteJsonFile(List<JsonList> list);
         public Task<(List<JsonList>, bool)> ReadJsonFile();
+        public Task<(List<JsonList>, bool)> UpdateJsonFile(JsonList json);
         public void Generate(List<SiteMapProperty> _news, int pageSize, int page, SiteMapType type);
         public void GenerateSiteMap(List<SiteMapProperty> _news, int pageSize, int page, SiteMapType type);
         public void GenerateSiteMapImage(List<SiteMapProperty> _news, int pageSize, int page);
@@ -46,10 +47,10 @@ namespace app.Services.SiteMapService
             this.env = env;
             this.configuration = configuration;
         }
-        public void Generate(List<SiteMapProperty> _news, int pageSize, int page, SiteMapType type)
+        public async void Generate(List<SiteMapProperty> _news, int pageSize, int page, SiteMapType type)
         {
             CreateFolder(Utility.EnumExtensions.GetDisplayName(type));
-             switch (type)
+            switch (type)
             {
                 case SiteMapType.Post:
                     GenerateSiteMap(_news, pageSize, page, type);
@@ -62,26 +63,27 @@ namespace app.Services.SiteMapService
                     break;
                 case SiteMapType.Catgory:
                     GenerateSiteMapOther(_news, pageSize, type);
-                 break;
+                    break;
                 case SiteMapType.SiteMapIndex:
                     AddOrUpdateSiteMapIndex();
                     break;
                 default:
                     break;
             }
-            WriteJsonFile(new List<JsonList?>()
-            {
+
+
+           await UpdateJsonFile(
                 new JsonList()
                 {
                     Count = pageSize,
                     Page = page,
                     Type=  type
                 }
-            });
+            );
         }
         public void GenerateSiteMapOther(List<SiteMapProperty> list, int index, SiteMapType type)
         {
-            XmlWriter writer = XmlWriter.Create($"{env.WebRootPath}/sitemap/{Utility.EnumExtensions.GetDisplayName(type)}/{index}.xml" );
+            XmlWriter writer = XmlWriter.Create($"{env.WebRootPath}/sitemap/{Utility.EnumExtensions.GetDisplayName(type)}/{index}.xml");
             writer.WriteStartDocument();
             writer.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
             foreach (var item in list)
@@ -91,20 +93,18 @@ namespace app.Services.SiteMapService
             writer.WriteEndDocument();
             writer.Close();
         }
-
         public void GenerateSiteMap(List<SiteMapProperty> _news, int pageSize, int page, SiteMapType type)
         {
 
             XmlWriter writer = XmlWriter.Create($"{env.WebRootPath}/sitemap/{Utility.EnumExtensions.GetDisplayName(type)}/{page}.xml");
-             writer.WriteStartDocument();
-            //http://www.sitemaps.org/schemas/sitemap/0.9
+            writer.WriteStartDocument();
             writer.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
             if (page == 1)
             {
                 WriteTag("1", "Daily", LinkSite, DateTime.Now, writer);
                 WriteTag("1", "Daily", LinkSite + "/Home/Index", DateTime.Now, writer);
             }
-           foreach (var item in _news)
+            foreach (var item in _news)
             {//"0.9", "Daily", string.Format("{0}s/{1}", LinkSite, item.Navigation), item.lastmod,
                 item.Writer = writer;
                 WriteTag(item);
@@ -284,6 +284,8 @@ namespace app.Services.SiteMapService
                     Page = 1,
                     Type = item
                 });
+
+                Console.WriteLine(item);
             }
             string output = JsonConvert.SerializeObject(list);
             using (FileStream fs = new FileStream($"{env.WebRootPath}/JsonFile.json", FileMode.Create))
@@ -294,7 +296,7 @@ namespace app.Services.SiteMapService
             }
             return list;
         }
-        public async Task<List<JsonList>> WriteJsonFile(List<JsonList?> list)
+        public async Task<List<JsonList>> WriteJsonFile(List<JsonList> list)
         {
             var Result = await ReadJsonFile();
             var temp = Result.Item1;
@@ -319,6 +321,21 @@ namespace app.Services.SiteMapService
             return temp;
         }
 
+        public async Task<(List<JsonList>, bool)> UpdateJsonFile(JsonList json)
+        {
 
+            var all = await ReadJsonFile();
+            var single = all.Item1.Where(x => x.Type == json.Type).FirstOrDefault();
+            all.Item1.Remove(single);
+
+            single.Count = json.Count;
+            single.Page = json.Page;
+            single.Type = json.Type;
+
+            all.Item1.Add(single);
+            await WriteJsonFile(all.Item1);
+            return (all.Item1 , true);
+
+        }
     }
 }

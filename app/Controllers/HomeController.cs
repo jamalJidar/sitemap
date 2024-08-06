@@ -27,38 +27,90 @@ public class HomeController : Controller
     {
 
         var item = await siteMapService.Config(SiteMapType.Post);
+        int JsonTotalCount = item.Item1;
+        bool order = false;
         Post post = new Post();
         var list = post.posts();
         int pageid = 1;
         int pageSize = 20;
-        int skip = (pageid - item.Item2) * pageSize;
-        int Count = list.Count;
-        Console.WriteLine($"count : {Count} json c {item.Item1*item.Item2}");
-        for (int i = 1; i <= ((Count / pageSize) + 1); i++)
+        int TotlaCount = 0;
+        if (JsonTotalCount == 0)
+            TotlaCount = list.Count();
+
+        else
         {
-            pageid = i;
-            skip = (pageid - 1) * pageSize;
-
-            var listNews = post.posts().OrderBy(x => x.Id).Skip(skip).Take(pageSize)
-                               .Select(x => new SiteMapProperty()
-                               {
-                                   Freq = ChangeFreq.None,
-                                   lastmod = x.DateCrete,
-                                   Navigation = x._slug,
-                                   Priority = 1,
-                                   Writer = null
-
-                               });
-            siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Post);
-            siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Image);
-            siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Tag);
-            siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Catgory);
+            JsonTotalCount = ((list.Count() - JsonTotalCount));
+            order = true;
         }
+
+
+        int skip = (pageid - item.Item2) * pageSize;
+        int total = 0;
+        Console.WriteLine($"totalCount : {TotlaCount} ((TotlaCount / pageSize)  :{((TotlaCount / pageSize))}");
+
+        for (int i = 1; i <= ((TotlaCount / pageSize) + 1); i++)
+        {
+            Console.WriteLine($"i:{i}");
+            Print(post.posts().OrderByDescending(x => x.Id).Skip(1).Take(TotlaCount)
+                                        .Select(x => new SiteMapProperty()
+                                        {
+                                            Freq = ChangeFreq.None,
+                                            lastmod = x.DateCrete,
+                                            Navigation = x._slug,
+                                            Priority = 1,
+                                            Writer = null
+
+                                        }).ToList()
+                                        );
+            //pageid = i;
+            //skip = (pageid - 1) * pageSize;
+            //var listNews =
+            //    !order ?
+            //    post.posts().OrderBy(x => x.Id).Skip(skip).Take(pageSize)
+            //                   .Select(x => new SiteMapProperty()
+            //                   {
+            //                       Freq = ChangeFreq.None,
+            //                       lastmod = x.DateCrete,
+            //                       Navigation = x._slug,
+            //                       Priority = 1,
+            //                       Writer = null
+
+            //                   })
+            //                   :
+            //   post.posts().OrderByDescending(x => x.Id).Skip(TotlaCount).Take(list.Count())
+            //                   .Select(x => new SiteMapProperty()
+            //                   {
+            //                       Freq = ChangeFreq.None,
+            //                       lastmod = x.DateCrete,
+            //                       Navigation = x._slug,
+            //                       Priority = 1,
+            //                       Writer = null
+
+            //                   })
+            //                   ;
+            //Print(listNews.ToList());
+            //total += listNews.Count();
+
+
+
+        }
+        //     Console.WriteLine($"count : {TotlaCount} i {i} - skip {skip} - pageSize {pageSize} postCount : {listNews.Count()} total : {total}");
+
+
+        // siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Post);
+        //siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Catgory);
+        //siteMapService.Generate(listNews.ToList(), skip, pageid, SiteMapType.Tag);
         siteMapService.AddOrUpdateSiteMapIndex();
         return View();
     }
 
-
+    private void Print(List<SiteMapProperty> sites)
+    {
+        sites.ForEach((x) =>
+        {
+            Console.WriteLine(x.Navigation);
+        });
+    }
 
 }
 
