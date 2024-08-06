@@ -15,7 +15,7 @@ namespace app.Models
         public List<Post> posts()
         {
             List<Post> list = new List<Post>();
-            for (int i = 0; i <= 1010; i++)
+            for (int i = 0; i <= 1023; i++)
             {
                 list.Add(new Post()
                 {

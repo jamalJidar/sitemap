@@ -328,7 +328,7 @@ namespace app.Services.SiteMapService
             var single = all.Item1.Where(x => x.Type == json.Type).FirstOrDefault();
             all.Item1.Remove(single);
 
-            single.Count = json.Count;
+            single.Count += json.Count;
             single.Page = json.Page;
             single.Type = json.Type;
 
