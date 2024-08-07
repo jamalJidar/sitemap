@@ -29,9 +29,7 @@ public class HomeController : Controller
         if (JsonTotalCount < 1)
             TotlaCount = list.Count();
         else if ((list.Count() - JsonTotalCount) == 0)
-        {
-            return View();
-        }
+        {  return View();}
         else
         {
             JsonTotalCount = ((list.Count() - JsonTotalCount));
